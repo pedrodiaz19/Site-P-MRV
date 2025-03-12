@@ -1,57 +1,61 @@
 import os
-from flask import Flask, send_from_directory, request, jsonify
-from flask_cors import CORS
 import sqlite3
+import re  # Biblioteca para manipulação de strings
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 
-app = Flask(__name__, static_folder="static")  
+app = Flask(__name__)
 CORS(app)
 
-# Ajusta a porta automaticamente para o Render
-PORT = int(os.environ.get("PORT", 5000))
-
-# Diretório base do projeto
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "processos.db")
 
-# 🔹 Servindo o index.html na rota principal
-@app.route("/")
-def index():
-    return send_from_directory(BASE_DIR, "index.html")
+def buscar_processo(entrada):
+    """Busca um processo no banco de dados pelo número do processo ou CPF."""
+    entrada_formatada = re.sub(r'[\.\-]', '', entrada)  # Remove pontos e traços
 
-# 🔹 Servindo arquivos estáticos (imagens, CSS, JS)
-@app.route("/static/<path:filename>")
-def static_files(filename):
-    return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
 
-# 🔹 Servindo manualmente o index.html caso precise acessar diretamente
-@app.route("/index.html")
-def index_html():
-    return send_from_directory(BASE_DIR, "index.html")
+    # Primeiro, tenta buscar pelo número do processo
+    cursor.execute("""
+        SELECT processo, vara, nome, status FROM processos 
+        WHERE REPLACE(REPLACE(processo, '.', ''), '-', '') = ?
+    """, (entrada_formatada,))
+    resultado = cursor.fetchall()
 
-# 🔹 Rota de consulta ao banco de dados
-@app.route("/consulta", methods=["GET"])
+    # Se não encontrar pelo processo, busca pelo CPF
+    if not resultado:
+        cursor.execute("""
+            SELECT processo, vara, nome, status FROM processos 
+            WHERE REPLACE(REPLACE(cpf, '.', ''), '-', '') = ?
+        """, (entrada_formatada,))
+        resultado = cursor.fetchall()
+
+    conn.close()
+
+    return [
+        {"processo": r[0], "vara": r[1], "nome": r[2], "status": r[3]}
+        for r in resultado
+    ]
+
 @app.route("/consulta", methods=["GET"])
 def consulta():
-    numero_processo = request.args.get("processo")
-    if not numero_processo:
-        return jsonify({"erro": "Número do processo é obrigatório"}), 400
+    entrada = request.args.get("processo")
+    if not entrada:
+        return jsonify({"erro": "Número do processo ou CPF é obrigatório"}), 400
 
-    resultados = buscar_processo(numero_processo)
+    resultados = buscar_processo(entrada)
     if resultados:
         return jsonify(resultados)
     else:
-        return jsonify({"erro": "Processo não encontrado"}), 404
+        return jsonify({"erro": "Nenhum processo encontrado para o número informado"}), 404
 
-# 🔹 Função para buscar processos no banco de dados
-def buscar_processo(numero_processo):
-    DB_PATH = os.path.join(BASE_DIR, "processos.db")
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT processo, vara, nome, status FROM processos WHERE processo = ?", (numero_processo,))
-    resultado = cursor.fetchall()
-    conn.close()
-    
-    return [{"processo": r[0], "vara": r[1], "nome": r[2], "status": r[3]} for r in resultado] if resultado else []
+@app.route("/")
+def index():
+    """Serve o arquivo index.html"""
+    return send_from_directory(BASE_DIR, "index.html")
 
-# 🔹 Iniciando a aplicação
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    app.run(debug=True)
+
