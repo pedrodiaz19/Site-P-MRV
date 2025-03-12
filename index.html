@@ -61,47 +61,49 @@
     </style>
     <script>
     function consultarProcesso() {
-            let numeroProcesso = document.getElementById("numero_processo").value;
-            if (!numeroProcesso) {
-                alert("Por favor, insira um número de processo.");
-                return;
-            }
-            
-            fetch(`https://site-p-mrv.onrender.com/consulta?processo=${numeroProcesso}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Erro HTTP! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Dados recebidos:", data); // Log para depuração
-                    let resultadoDiv = document.getElementById("resultado");
-                    resultadoDiv.innerHTML = "";
-                    
-                    if (data.erro) {
-                        resultadoDiv.innerHTML = `<p style='color: red;'>${data.erro}</p>`;
-                    } else {
-                        data.forEach(item => {
-                            resultadoDiv.innerHTML += `
-                                <div class='resultado'>
-                                    <p><strong>Processo:</strong> ${item.processo}</p>
-                                    <p><strong>Vara:</strong> ${item.vara}</p>
-                                    <p><strong>Nome:</strong> ${item.nome}</p>
-                                    <p><strong>Status:</strong> ${item.status}</p>
-                                    <hr>
-                                </div>
-                            `;
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error("Erro na requisição:", error);
-                    document.getElementById("resultado").innerHTML = `<p style='color: red;'>Erro ao buscar processo. Verifique o console.</p>`;
-                });
+        let numeroProcesso = document.getElementById("numero_processo").value;
+        if (!numeroProcesso) {
+            alert("Por favor, insira um número de processo.");
+            return;
         }
-
+        
+        let apiUrl = "https://site-p-mrv.onrender.com/consulta?processo=";
+        
+        fetch(`${apiUrl}${numeroProcesso}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Dados recebidos:", data); // Log para depuração
+                let resultadoDiv = document.getElementById("resultado");
+                resultadoDiv.innerHTML = "";
+                
+                if (data.erro) {
+                    resultadoDiv.innerHTML = `<p style='color: red;'>${data.erro}</p>`;
+                } else {
+                    data.forEach(item => {
+                        resultadoDiv.innerHTML += `
+                            <div class='resultado'>
+                                <p><strong>Processo:</strong> ${item.processo}</p>
+                                <p><strong>Vara:</strong> ${item.vara}</p>
+                                <p><strong>Nome:</strong> ${item.nome}</p>
+                                <p><strong>Status:</strong> ${item.status}</p>
+                                <hr>
+                            </div>
+                        `;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Erro na requisição:", error);
+                document.getElementById("resultado").innerHTML = `<p style='color: red;'>Erro ao buscar processo. Verifique o console.</p>`;
+            });
+    }
 </script>
+
 
 </head>
 <body>
