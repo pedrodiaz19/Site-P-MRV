@@ -59,7 +59,7 @@
             margin-bottom: 10px;
         }
     </style>
-    <script>
+   <script>
     function consultarProcesso() {
         let numeroProcesso = document.getElementById("numero_processo").value;
         if (!numeroProcesso) {
@@ -67,9 +67,7 @@
             return;
         }
         
-        let apiUrl = "https://site-p-mrv.onrender.com/consulta?processo=";
-        
-        fetch(`${apiUrl}${numeroProcesso}`)
+        fetch(`https://site-p-mrv.onrender.com/consulta?processo=${numeroProcesso}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Erro HTTP! Status: ${response.status}`);
@@ -103,7 +101,6 @@
             });
     }
 </script>
-
 
 </head>
 <body>
