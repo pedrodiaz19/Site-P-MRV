@@ -50,4 +50,4 @@ def buscar_processo(numero_processo):
 
 # 🔹 Iniciando a aplicação
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=PORT, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
