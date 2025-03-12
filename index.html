@@ -71,7 +71,7 @@
         let resultadoDiv = document.getElementById("resultado");
         resultadoDiv.innerHTML = "<p>Carregando...</p>";
 
-        fetch(`${window.location.origin}/'https://https://site-p-mrv.onrender.com//consulta?processo=${numeroProcesso}`)
+        fetch(`https://site-p-mrv.onrender.com/consulta?processo=${numeroProcesso}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Erro HTTP! Status: ${response.status}`);
