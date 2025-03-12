@@ -9,20 +9,25 @@ CORS(app)
 # Ajusta a porta automaticamente para o Render
 PORT = int(os.environ.get("PORT", 5000))
 
-# Diretório do backend
+# Diretório base do projeto
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 🔹 Servindo o index.html
+# 🔹 Servindo o index.html na rota principal
 @app.route("/")
 def index():
     return send_from_directory(BASE_DIR, "index.html")
 
-# 🔹 Servindo arquivos estáticos (exemplo: imagens, CSS, JS)
+# 🔹 Servindo arquivos estáticos (imagens, CSS, JS)
 @app.route("/static/<path:filename>")
 def static_files(filename):
     return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
 
-# 🔹 Rota de consulta funcionando normalmente
+# 🔹 Servindo manualmente o index.html caso precise acessar diretamente
+@app.route("/index.html")
+def index_html():
+    return send_from_directory(BASE_DIR, "index.html")
+
+# 🔹 Rota de consulta ao banco de dados
 @app.route("/consulta", methods=["GET"])
 def consulta():
     numero_processo = request.args.get("processo")
