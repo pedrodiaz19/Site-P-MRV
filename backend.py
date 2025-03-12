@@ -29,13 +29,17 @@ def index_html():
 
 # 🔹 Rota de consulta ao banco de dados
 @app.route("/consulta", methods=["GET"])
+@app.route("/consulta", methods=["GET"])
 def consulta():
     numero_processo = request.args.get("processo")
     if not numero_processo:
         return jsonify({"erro": "Número do processo é obrigatório"}), 400
 
     resultados = buscar_processo(numero_processo)
-    return jsonify(resultados if resultados else {"erro": "Processo não encontrado"}), 404
+    if resultados:
+        return jsonify(resultados)
+    else:
+        return jsonify({"erro": "Processo não encontrado"}), 404
 
 # 🔹 Função para buscar processos no banco de dados
 def buscar_processo(numero_processo):
