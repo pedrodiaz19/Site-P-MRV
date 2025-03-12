@@ -1,25 +1,28 @@
 import os
-import sqlite3
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, send_from_directory, request, jsonify
 from flask_cors import CORS
+import sqlite3
 
-app = Flask(__name__, static_folder="static")  # Configura a pasta estática
-CORS(app)  # Habilita CORS
+app = Flask(__name__, static_folder="static")  
+CORS(app)
 
-# Configuração correta do caminho do banco de dados para o Render
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Diretório atual do backend.py
-DB_PATH = os.path.join(BASE_DIR, "processos.db")  # Caminho do banco relativo
+# Ajusta a porta automaticamente para o Render
+PORT = int(os.environ.get("PORT", 5000))
 
-# Função para buscar processos no banco de dados
-def buscar_processo(numero_processo):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT processo, vara, nome, status FROM processos WHERE processo = ?", (numero_processo,))
-    resultado = cursor.fetchall()
-    conn.close()
+# Diretório do backend
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    return [{"processo": r[0], "vara": r[1], "nome": r[2], "status": r[3]} for r in resultado] if resultado else []
+# 🔹 Servindo o index.html
+@app.route("/")
+def index():
+    return send_from_directory(BASE_DIR, "index.html")
 
+# 🔹 Servindo arquivos estáticos (exemplo: imagens, CSS, JS)
+@app.route("/static/<path:filename>")
+def static_files(filename):
+    return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
+
+# 🔹 Rota de consulta funcionando normalmente
 @app.route("/consulta", methods=["GET"])
 def consulta():
     numero_processo = request.args.get("processo")
@@ -29,16 +32,17 @@ def consulta():
     resultados = buscar_processo(numero_processo)
     return jsonify(resultados if resultados else {"erro": "Processo não encontrado"}), 404
 
-# Rota para servir o index.html corretamente
-@app.route("/")
-def index():
-    return send_from_directory(BASE_DIR, "index.html")
+# 🔹 Função para buscar processos no banco de dados
+def buscar_processo(numero_processo):
+    DB_PATH = os.path.join(BASE_DIR, "processos.db")
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT processo, vara, nome, status FROM processos WHERE processo = ?", (numero_processo,))
+    resultado = cursor.fetchall()
+    conn.close()
+    
+    return [{"processo": r[0], "vara": r[1], "nome": r[2], "status": r[3]} for r in resultado] if resultado else []
 
-# Rota para servir imagens da pasta "static"
-@app.route("/static/<path:filename>")
-def static_files(filename):
-    return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
-
-# Rodando localmente
+# 🔹 Iniciando a aplicação
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=True)
