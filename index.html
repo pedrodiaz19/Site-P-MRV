@@ -62,7 +62,7 @@
 </head>
 <body>
     <div class="container">
-         <img src="/static/k2-f1 - Copia.jpg" alt="Logo da K2 Consultoria Econômica">
+        <img src="/static/k2-f1 - Copia.jpg" alt="Logo da K2 Consultoria Econômica">
         <h2>Consulta de Processos</h2>
         <input type="text" id="numero_processo" placeholder="Digite o número do processo ou CPF">
         <button onclick="consultarProcesso()">Consultar</button>
@@ -77,7 +77,6 @@
                 return;
             }
 
-            // Remove pontos e traços da entrada
             entrada = entrada.replace(/[.\-]/g, '');
 
             fetch(`https://site-p-mrv.onrender.com/consulta?processo=${entrada}`)
@@ -96,12 +95,17 @@
                         resultadoDiv.innerHTML = `<p style='color: red;'>${data.erro}</p>`;
                     } else {
                         data.forEach(item => {
+                            let linkCalculo = item.arquivo_calculo ? 
+                                `<a href='${item.arquivo_calculo}' target='_blank'>Baixar Cálculo</a>` : 
+                                "Cálculo não disponível.";
+                            
                             resultadoDiv.innerHTML += `
                                 <div class='resultado'>
                                     <p><strong>Processo:</strong> ${item.processo}</p>
                                     <p><strong>Vara:</strong> ${item.vara}</p>
                                     <p><strong>Nome:</strong> ${item.nome}</p>
                                     <p><strong>Status:</strong> ${item.status}</p>
+                                    <p><strong>Cálculo:</strong> ${linkCalculo}</p>
                                     <hr>
                                 </div>
                             `;
