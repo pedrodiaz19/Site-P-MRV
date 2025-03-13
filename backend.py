@@ -42,9 +42,10 @@ def buscar_processo(entrada):
 
 def buscar_arquivo_calculo(nome):
     """Busca um arquivo de PDF na pasta 'calculos' baseado no nome."""
-    nome_formatado = re.sub(r'[^a-zA-Z0-9]', '_', nome)  # Formata nome para evitar problemas com caracteres especiais
+    nome_formatado = re.sub(r'[^a-zA-Z0-9 ]', '', nome).lower()  # Remove caracteres especiais e deixa tudo minúsculo
     for arquivo in os.listdir(CALCULOS_DIR):
-        if arquivo.lower().startswith(nome_formatado.lower()) and arquivo.lower().endswith(".pdf"):
+        arquivo_formatado = re.sub(r'[^a-zA-Z0-9 ]', '', arquivo).lower()
+        if nome_formatado in arquivo_formatado and arquivo.lower().endswith(".pdf"):
             return arquivo
     return None
 
@@ -61,6 +62,8 @@ def consulta():
             arquivo_pdf = buscar_arquivo_calculo(nome)
             if arquivo_pdf:
                 resultado["arquivo_calculo"] = f"/calculos/{arquivo_pdf}"
+            else:
+                resultado["arquivo_calculo"] = None
         return jsonify(resultados)
     else:
         return jsonify({"erro": "Nenhum processo encontrado para o número informado"}), 404
@@ -77,4 +80,3 @@ def index():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
