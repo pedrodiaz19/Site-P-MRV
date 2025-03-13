@@ -9,6 +9,7 @@ CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "processos.db")
+CALCULOS_DIR = os.path.join(BASE_DIR, "calculos")  # Pasta onde os PDFs estão armazenados
 
 def buscar_processo(entrada):
     """Busca um processo no banco de dados pelo número do processo ou CPF."""
@@ -39,6 +40,14 @@ def buscar_processo(entrada):
         for r in resultado
     ]
 
+def buscar_arquivo_calculo(nome):
+    """Busca um arquivo de PDF na pasta 'calculos' baseado no nome."""
+    nome_formatado = re.sub(r'[^a-zA-Z0-9]', '_', nome)  # Formata nome para evitar problemas com caracteres especiais
+    for arquivo in os.listdir(CALCULOS_DIR):
+        if arquivo.lower().startswith(nome_formatado.lower()) and arquivo.lower().endswith(".pdf"):
+            return arquivo
+    return None
+
 @app.route("/consulta", methods=["GET"])
 def consulta():
     entrada = request.args.get("processo")
@@ -47,9 +56,19 @@ def consulta():
 
     resultados = buscar_processo(entrada)
     if resultados:
+        for resultado in resultados:
+            nome = resultado["nome"]
+            arquivo_pdf = buscar_arquivo_calculo(nome)
+            if arquivo_pdf:
+                resultado["arquivo_calculo"] = f"/calculos/{arquivo_pdf}"
         return jsonify(resultados)
     else:
         return jsonify({"erro": "Nenhum processo encontrado para o número informado"}), 404
+
+@app.route("/calculos/<path:filename>")
+def download_calculo(filename):
+    """Serve os arquivos PDF da pasta 'calculos'."""
+    return send_from_directory(CALCULOS_DIR, filename)
 
 @app.route("/")
 def index():
