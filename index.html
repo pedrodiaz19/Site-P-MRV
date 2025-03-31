@@ -29,6 +29,15 @@
             width: 200px;
             margin-bottom: 20px;
         }
+        .instrucoes {
+            background-color: #eef1f5;
+            border-left: 4px solid #007BFF;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 14px;
+            border-radius: 5px;
+        }
         input, button {
             width: calc(100% - 20px);
             padding: 10px;
@@ -64,7 +73,14 @@
     <div class="container">
         <img src="/static/k2-f1 - Copia.jpg" alt="Logo da K2 Consultoria Econômica">
         <h2>Consulta de Processos</h2>
-        <input type="text" id="numero_processo" placeholder="Digite o número do processo ou CPF">
+
+        <div class="instrucoes">
+            <p><strong>Instruções:</strong></p>
+            <p>Este site permite que professores e servidores consultem o andamento ou cálculo do processo contra o Município de Volta Redonda.</p>
+            <p>Para acessar as informações, digite seu número de CPF e clique em <strong>Consultar</strong>.</p>
+        </div>
+
+        <input type="text" id="numero_processo" placeholder="Digite o número do CPF">
         <button onclick="consultarProcesso()">Consultar</button>
         <div id="resultado" class="resultado-container"></div>
     </div>
